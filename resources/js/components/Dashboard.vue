@@ -345,14 +345,6 @@
                 type: String,
                 default: ""
             },
-            selectedCityProperty: {
-                type: String,
-                default: ""
-            },
-            selectedMunicipalityProperty: {
-                type: String,
-                default: ""
-            },
             selectedBarangayProperty: {
                 type: String,
                 default: ""
@@ -363,50 +355,29 @@
                 selectedRegion: this.selectedRegionProperty,
                 selectedProvince: this.selectedProvinceProperty,
                 selectedDistrict: this.selectedDistrictProperty,
-                selectedCity: this.selectedCityProperty,
-                selectedMunicipality: this.selectedMunicipalityProperty,
                 selectedBarangay: this.selectedBarangayProperty,
                 regions: [],
                 provinces: [],
                 districts: [],
-                cities: [],
-                municipalities: [],
                 barangays: [],
                 region: "region",
-                // region: "regions",
                 province: "province",
-                // province: "provinces",
                 district: "district",
-                division: "",
                 city: "city",
-                // city: "cities",
                 municipality: "municipality",
-                // municipality: "municipalities",
                 barangay: "barangay",
-                // barangay: "barangays",
             };
         },
         watch: {
             selectedRegion: function (newSelectedRegion, oldSelectedRegion) {
-                // this.updateDivision();
                 this.debouncedSelectedRegionUpdate(newSelectedRegion);
             },
             selectedProvince: function (newSelectedProvince, oldSelectedProvince) {
-                // this.updateDivision();
                 this.debouncedSelectedProvinceUpdate(newSelectedProvince);
             },
             selectedDistrict: function (newSelectedDistrict, oldSelectedDistrict) {
                 this.debouncedSelectedDistrictUpdate(newSelectedDistrict);
             }
-            // selectedCity: function (newSelectedCity, oldSelectedCity) {
-            //     // const value = this.isNcrTheSelectedRegion() ? this.selectedRegion : newSelectedCity
-
-            //     // this.debouncedSelectedCityUpdate(value);
-            //     this.debouncedSelectedCityUpdate(newSelectedCity);
-            // },
-            // selectedMunicipality: function (newSelectedMunicipality, oldSelectedMunicipality) {
-            //     this.debouncedSelectedMunicipalityUpdate(newSelectedMunicipality);
-            // }
         },
         created: function () {
             //1s delay
@@ -415,8 +386,6 @@
             this.debouncedSelectedRegionUpdate =  _.debounce(this.selectedRegionUpdate, debounce);
             this.debouncedSelectedProvinceUpdate =  _.debounce(this.selectedProvinceUpdate, debounce);
             this.debouncedSelectedDistrictUpdate =  _.debounce(this.selectedDistrictUpdate, debounce);
-            // this.debouncedSelectedCityUpdate =  _.debounce(this.selectedCityOrMunicipalityUpdate, debounce);
-            // this.debouncedSelectedMunicipalityUpdate =  _.debounce(this.selectedCityOrMunicipalityUpdate, debounce);
         },
         async mounted() {
             const response = await this.getData(`${this.region}`);
@@ -439,23 +408,12 @@
 
                 return this.selectedRegion.name === "NCR";
             },
-            // updateDivision: function () {
-
-            //     if (this.selectedRegion) {
-            //         this.division =  this.isNcrTheSelectedRegion ? this.city : this.municipality;
-            //     } else {
-            //         this.division = "";
-            //     }
-            // },
             selectedRegionUpdate: async function (value) {
                 this.selectedProvince = "";
                 this.selectedDistrict = "";
-                // this.selectedCity = "";
-                // this.selectedMunicipality = "";
                 this.selectedBarangay = "";
 
                 if (! value) return this.selectedRegion = "";
-                // this.provinces = this.districts = this.barangays = [];
 
                 var response = [];
 
@@ -468,62 +426,28 @@
                     response = await this.getData(`${this.region}/${value.code}/${this.province}`);
 
                     this.provinces = response.data.data;
-                    // this.districts = [];
+                    this.districts = [];
                 }
             },
             selectedProvinceUpdate: async function (value) {
-                // this.selectedCity = "";
-                // this.selectedMunicipality = "";
                 this.selectedDistrict = "";
                 this.selectedBarangay = "";
 
                 if (! value) return this.selectedProvince = "";
-                // this.districts = this.barangays = [];
 
                 const response = await this.getData(`${this.province}/${value.code}/${this.district}`);
 
                 this.districts = response.data.data;
-
-                // if (_.isEmpty(this.division)) return;
-
-                // const response = await this.getData(`${this.province}/${value.code}/${this.division}`);
-
-                // const cits = await this.getData(`${this.province}/${value.code}/city`);
-
-                // console.log(['cities', cits.data.data, `${this.province}/${value.code}/city`]);
-
-                // const muns = await this.getData(`${this.province}/${value.code}/municipality`);
-
-                // console.log(['munis', muns.data.data]);
-
-                // const data = response.data.data ?? [];
-                // console.log(data);
-
-                // if (this.division === this.city) {
-                //     this.cities = data;
-                //     this.municipalities = [];
-                // } else {
-                //     this.municipalities = data;
-                //     this.cities = [];
-                // }
             },
             selectedDistrictUpdate: async function (value) {
                 this.selectedBarangay = "";
 
                 if (! value) return this.selectedDistrict = "";
-                // this.barangays = [];
 
                 const response = await this.getData(`${this.district}/${value.code}/${this.barangay}`);
 
                 this.barangays = response.data.data;
             }
-            // selectedCityOrMunicipalityUpdate: async function (value) {
-            //     this.selectedBarangay = "";
-
-            //     const response = await this.getData(`${this.division}/${value.code}/${this.barangay}`);
-            //     this.barangays = response.data.data ?? [];
-            //     console.log(`${this.division}/${value.code}/${this.barangay}`, response);
-            // }
         }
     }
 </script>
