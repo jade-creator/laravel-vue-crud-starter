@@ -6,7 +6,8 @@
 
 require('./bootstrap');
 
-window.Vue = require('vue');
+import Vue from 'vue';
+window.Vue = Vue;
 import moment from 'moment';
 
 import { Form, HasError, AlertError } from 'vform';
@@ -42,6 +43,9 @@ Vue.use(VueProgressBar, {
 Vue.component(HasError.name, HasError)
 Vue.component(AlertError.name, AlertError)
 
+import vSelect from 'vue-select'
+Vue.component('v-select', vSelect)
+
 
 /**
  * Routes imports and assigning
@@ -63,7 +67,7 @@ const router = new VueRouter({
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
- 
+
 // Components
 Vue.component('pagination', require('laravel-vue-pagination'));
 Vue.component('dashboard', require('./components/Dashboard.vue'));

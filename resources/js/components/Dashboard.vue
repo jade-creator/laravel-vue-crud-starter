@@ -200,13 +200,330 @@
             </div>
             <!-- /.row -->
         </div><!--/. container-fluid -->
+
+        <div class="row">
+            <div class="col-6">
+                <label
+                    v-text="this.region"
+                    :for="this.region"
+                    class="d-block text-capitalize"></label>
+
+                <v-select
+                    v-model="selectedRegion"
+                    @input="selectedRegionUpdate"
+                    label="regionName"
+                    :options="regions"
+                    :placeholder="`Select a ${this.region}`"></v-select>
+                <!-- <select
+                    v-model="selectedRegion"
+                    :name="this.region"
+                    :id="`select-${this.region}`"
+                    class="form-control">
+                    <option
+                        v-text="`Select a ${this.region}`"
+                        value=""></option>
+                    <option
+                        v-for="region in regions"
+                        v-text="`${region.regionName} (${region.name })`"
+                        :value="region">
+                    </option>
+                </select> -->
+            </div>
+
+            <div
+                v-if="!this.isNcrTheSelectedRegion()"
+                class="col-6">
+                <label
+                    v-text="this.province"
+                    :for="this.province"
+                    class="d-block text-capitalize"
+                    :class="this.selectedRegion ? '' : 'text-muted'"></label>
+
+                <v-select
+                    v-model="selectedProvince"
+                    @input="selectedProvinceUpdate"
+                    label="name"
+                    :options="provinces"
+                    :disabled="this.selectedRegion === ''"
+                    :placeholder="`Select a ${this.province}`"></v-select>
+                <!-- <select
+                    v-model="selectedProvince"
+                    :name="this.province"
+                    :id="`select-${this.province}`"
+                    :disabled="this.selectedRegion === ''"
+                    class="form-control">
+                    <option
+                        v-text="`Select a ${this.province}`"
+                        value=""></option>
+                    <option
+                        v-for="province in provinces"
+                        v-text="province.name"
+                        :value="province">
+                    </option>
+                </select> -->
+            </div>
+
+            <div class="col-6">
+                <label
+                    v-text="this.isNcrTheSelectedRegion() ? this.city : this.district"
+                    :for="this.district"
+                    class="d-block text-capitalize"
+                    :class="this.selectedProvince ? '' : 'text-muted'"></label>
+
+                <v-select
+                    v-model="selectedDistrict"
+                    @input="selectedDistrictUpdate"
+                    label="name"
+                    :options="districts"
+                    :disabled="this.isNcrTheSelectedRegion() ? false : this.selectedProvince === ''"
+                    :placeholder="`Select a ${this.isNcrTheSelectedRegion() ? this.city : this.district}`"></v-select>
+                <!-- <select
+                    v-model="selectedDistrict"
+                    :name="this.district"
+                    :id="`select-${this.district}`"
+                    :disabled="this.isNcrTheSelectedRegion() ? false : this.selectedProvince === ''"
+                    class="form-control">
+                    <option
+                        v-text="`Select a ${this.isNcrTheSelectedRegion() ? this.city : this.district}`"
+                        value=""></option>
+                    <option
+                        v-for="district in districts"
+                        v-text="district.name"
+                        :value="district">
+                    </option>
+                </select> -->
+            </div>
+
+            <div class="col-6">
+                <label
+                    v-text="this.barangay"
+                    :for="this.barangay"
+                    class="d-block text-capitalize"
+                    :class="this.selectedDistrict ? '' : 'text-muted'"></label>
+
+                <v-select
+                    v-model="selectedBarangay"
+                    label="name"
+                    :options="barangays"
+                    :disabled="this.selectedDistrict === ''"
+                    :placeholder="`Select a ${this.barangay}`"></v-select>
+               <!--  <select
+                    v-model="selectedBarangay"
+                    :name="this.barangay"
+                    :id="`select-${this.barangay}`"
+                    :disabled="this.selectedDistrict === ''"
+                    class="form-control">
+                    <option
+                        v-text="`Select a ${this.barangay}`"
+                        value=""></option>
+                    <option
+                        v-for="barangay in barangays"
+                        v-text="barangay.name"
+                        :value="barangay">
+                    </option>
+                </select> -->
+            </div>
+        </div>
     </section>
 </template>
 
 <script>
+    import 'vue-select/dist/vue-select.css';
+    import _ from 'lodash';
+
     export default {
-        mounted() {
-            console.log('Component mounted.')
+        props: {
+            selectedRegionProperty: {
+                type: String,
+                default: ""
+            },
+            selectedProvinceProperty: {
+                type: String,
+                default: ""
+            },
+            selectedDistrictProperty: {
+                type: String,
+                default: ""
+            },
+            selectedCityProperty: {
+                type: String,
+                default: ""
+            },
+            selectedMunicipalityProperty: {
+                type: String,
+                default: ""
+            },
+            selectedBarangayProperty: {
+                type: String,
+                default: ""
+            }
+        },
+        data: function () {
+            return {
+                selectedRegion: this.selectedRegionProperty,
+                selectedProvince: this.selectedProvinceProperty,
+                selectedDistrict: this.selectedDistrictProperty,
+                selectedCity: this.selectedCityProperty,
+                selectedMunicipality: this.selectedMunicipalityProperty,
+                selectedBarangay: this.selectedBarangayProperty,
+                regions: [],
+                provinces: [],
+                districts: [],
+                cities: [],
+                municipalities: [],
+                barangays: [],
+                region: "region",
+                // region: "regions",
+                province: "province",
+                // province: "provinces",
+                district: "district",
+                division: "",
+                city: "city",
+                // city: "cities",
+                municipality: "municipality",
+                // municipality: "municipalities",
+                barangay: "barangay",
+                // barangay: "barangays",
+            };
+        },
+        watch: {
+            selectedRegion: function (newSelectedRegion, oldSelectedRegion) {
+                // this.updateDivision();
+                this.debouncedSelectedRegionUpdate(newSelectedRegion);
+            },
+            selectedProvince: function (newSelectedProvince, oldSelectedProvince) {
+                // this.updateDivision();
+                this.debouncedSelectedProvinceUpdate(newSelectedProvince);
+            },
+            selectedDistrict: function (newSelectedDistrict, oldSelectedDistrict) {
+                this.debouncedSelectedDistrictUpdate(newSelectedDistrict);
+            }
+            // selectedCity: function (newSelectedCity, oldSelectedCity) {
+            //     // const value = this.isNcrTheSelectedRegion() ? this.selectedRegion : newSelectedCity
+
+            //     // this.debouncedSelectedCityUpdate(value);
+            //     this.debouncedSelectedCityUpdate(newSelectedCity);
+            // },
+            // selectedMunicipality: function (newSelectedMunicipality, oldSelectedMunicipality) {
+            //     this.debouncedSelectedMunicipalityUpdate(newSelectedMunicipality);
+            // }
+        },
+        created: function () {
+            //1s delay
+            const debounce = 1000;
+
+            this.debouncedSelectedRegionUpdate =  _.debounce(this.selectedRegionUpdate, debounce);
+            this.debouncedSelectedProvinceUpdate =  _.debounce(this.selectedProvinceUpdate, debounce);
+            this.debouncedSelectedDistrictUpdate =  _.debounce(this.selectedDistrictUpdate, debounce);
+            // this.debouncedSelectedCityUpdate =  _.debounce(this.selectedCityOrMunicipalityUpdate, debounce);
+            // this.debouncedSelectedMunicipalityUpdate =  _.debounce(this.selectedCityOrMunicipalityUpdate, debounce);
+        },
+        async mounted() {
+            const response = await this.getData(`${this.region}`);
+            this.regions = response.data.data ?? [];
+        },
+        methods: {
+            getData(url) {
+                url = "/api/" + url;
+
+                return axios.get(url)
+                    .then(function (response) {
+                        return response;
+                    })
+                    .catch(function (error) {
+                        // console.log("error:", error);
+                    });
+            },
+            isNcrTheSelectedRegion: function () {
+                if (_.isEmpty(this.selectedRegion)) return false;
+
+                return this.selectedRegion.name === "NCR";
+            },
+            // updateDivision: function () {
+
+            //     if (this.selectedRegion) {
+            //         this.division =  this.isNcrTheSelectedRegion ? this.city : this.municipality;
+            //     } else {
+            //         this.division = "";
+            //     }
+            // },
+            selectedRegionUpdate: async function (value) {
+                this.selectedProvince = "";
+                this.selectedDistrict = "";
+                // this.selectedCity = "";
+                // this.selectedMunicipality = "";
+                this.selectedBarangay = "";
+
+                if (! value) return this.selectedRegion = "";
+                // this.provinces = this.districts = this.barangays = [];
+
+                var response = [];
+
+                if (this.isNcrTheSelectedRegion()) {
+                    response = await this.getData(`${this.region}/${value.code}/${this.district}`);
+
+                    this.districts = response.data.data;
+                    this.provinces = [];
+                } else {
+                    response = await this.getData(`${this.region}/${value.code}/${this.province}`);
+
+                    this.provinces = response.data.data;
+                    // this.districts = [];
+                }
+            },
+            selectedProvinceUpdate: async function (value) {
+                // this.selectedCity = "";
+                // this.selectedMunicipality = "";
+                this.selectedDistrict = "";
+                this.selectedBarangay = "";
+
+                if (! value) return this.selectedProvince = "";
+                // this.districts = this.barangays = [];
+
+                const response = await this.getData(`${this.province}/${value.code}/${this.district}`);
+
+                this.districts = response.data.data;
+
+                // if (_.isEmpty(this.division)) return;
+
+                // const response = await this.getData(`${this.province}/${value.code}/${this.division}`);
+
+                // const cits = await this.getData(`${this.province}/${value.code}/city`);
+
+                // console.log(['cities', cits.data.data, `${this.province}/${value.code}/city`]);
+
+                // const muns = await this.getData(`${this.province}/${value.code}/municipality`);
+
+                // console.log(['munis', muns.data.data]);
+
+                // const data = response.data.data ?? [];
+                // console.log(data);
+
+                // if (this.division === this.city) {
+                //     this.cities = data;
+                //     this.municipalities = [];
+                // } else {
+                //     this.municipalities = data;
+                //     this.cities = [];
+                // }
+            },
+            selectedDistrictUpdate: async function (value) {
+                this.selectedBarangay = "";
+
+                if (! value) return this.selectedDistrict = "";
+                // this.barangays = [];
+
+                const response = await this.getData(`${this.district}/${value.code}/${this.barangay}`);
+
+                this.barangays = response.data.data;
+            }
+            // selectedCityOrMunicipalityUpdate: async function (value) {
+            //     this.selectedBarangay = "";
+
+            //     const response = await this.getData(`${this.division}/${value.code}/${this.barangay}`);
+            //     this.barangays = response.data.data ?? [];
+            //     console.log(`${this.division}/${value.code}/${this.barangay}`, response);
+            // }
         }
     }
 </script>
